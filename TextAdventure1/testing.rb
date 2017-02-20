@@ -4,20 +4,20 @@ class Character
     @type = type
   end
 
-  base_strength = 0
+  @base_strength = 0
   base_health = 0
   base_agility = 0
 
-  case type 
-  when type == brute
+  case @type 
+  when @type == "brute"
     base_strength += 70
     base_health += 60
     base_agility += 40
-  when type == rouge
+  when @type == "rouge"
     base_strength += 50
     base_health += 50
     base_agility += 70
-  when type == cleric
+  when @type == "cleric"
     base_strength += 40
     base_health += 80
     base_agility += 50
