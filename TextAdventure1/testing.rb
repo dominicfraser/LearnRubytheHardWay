@@ -81,6 +81,68 @@ class Scene
   end
 end
 
+class OpeningScene < Scene
+  def enter()
+    puts "welcome message"
+    return "signboard"
+  end
+end
+
+class Signboard < Scene
+  def enter()
+    puts "where do you want to go?"
+    puts "PUMPKINPATCH, BLACKSMITH, MONSTER"
+    where = gets.chomp.upcase
+
+    if where == "PUMPKINPATCH"
+      puts "pumpkins"
+      return "pumpkin_patch"
+    elsif where == "BLACKSMITH"
+      puts "blacksmith"
+      return "blacksmith"
+    elsif where == "MONSTER"
+      puts "monster"
+      return "monster"
+    else
+      puts "invalid"
+      return "signboard"
+    end
+  end
+end
+
+class PumpkinPatch < Scene
+
+  def enter()
+    while @visited_pumpkin == false
+        puts "welcome to pumpkin patch"
+        puts "you can CATCH or THROW pumpkins"
+        puts "which would you like to do?"
+
+        action = gets.chomp.upcase
+
+        if action == "CATCH"
+          puts "now you catch"
+          Player.base_agility += 10
+          @visited_pumpkin = true
+          return "signboard"
+
+        elsif action == "THROW"
+          puts "now you throw"
+          Player.base_strength += 10
+          @visited_pumpkin = true
+          return "signboard"
+
+        else 
+          puts "invalid"
+          return "pumpkin_patch"
+        end
+    end
+
+    puts "You've been here before! Season over."
+    return "signboard"
+  end
+end
+
 class Blacksmith < Scene
 
   def enter 
@@ -92,7 +154,7 @@ class Blacksmith < Scene
 
       puts "welcome blacksmith message"
       puts "choose HELP or LEAVE"
-      
+
       action = gets.chomp.upcase
 
       if action == "HELP"
@@ -111,29 +173,143 @@ class Blacksmith < Scene
             puts "didn't understand"
             choice = gets.chomp.upcase
           end
-              
-      
+        return "signboard"
 
       elsif action == "LEAVE"
         puts "building burns down"
         @visited_blacksmith = true
-        puts "hope no one saw"
+        return "signboard"
       else
         puts "didn't understand"
-        puts "something went wrong"
+        return "blacksmith"
       end
     end
 
-    puts "this wouldnt be seen as redirect"
+    puts "Been to blacksmith before"
     return "signboard"
   end
 end
+
+class Monster < Scene
+  def initialize
+    @fighting = true
+    @damage_this_round = Player.base_strength + rand(1..10)
+    @your_health = Player.base_health
+    @monster_health = 300
+  end
+
+  def did_you_hit 
+    if rand(1..10) < ( Player.base_agility / 10 )
+      return true
+    else
+      return false
+    end
+  end
+
+  def it_strikes
+      if rand(1..10) > ( Player.base_agility / 10 - 2 )
+        @your_health -= 15
+        if @your_health <= 0
+          @fighting = false
+        else
+          puts "It hits you but you're still standing."
+        end
+      else
+        puts "It missed!"
+      end
+  end
+
+  def enter 
+    while @fighting
+      
+      if did_you_hit == true
+        @monster_health -= @damage_this_round
+        puts "You hit it!"
+        if @monster_health <= 0
+          @fighting = false
+        else
+          puts "It tries to hit you!"
+          it_strikes
+        end
+
+      else
+        puts "You missed!"
+        puts "It tries to hit you!"
+        it_strikes
+      end
+    end
+
+    if @your_health <= 0
+      return "death"
+    else
+      return "completed"
+     end
+
+  end
+end
+
+class Death < Scene
+  def enter 
+    puts "You died.  Good job!"
+    exit(1)
+  end
+end
+
+class Completed < Scene
+  def enter
+    puts "You won! Good job."
+  end
+end
+
+class GameEngine 
+  def initialize(scenes)
+    @scenes = scenes
+  end
+
+  def play()
+    current_scene = @scenes.opening_scene()
+    last_scene = @scenes.next_scene("completed")
+
+    while current_scene != last_scene
+      next_scene_name = current_scene.enter()
+      current_scene = @scenes.next_scene(next_scene_name)
+    end
+
+  current_scene.enter()
+  end
+end
+
+class GameMap
+  @@scene_options = {
+    "opening_scene" => OpeningScene.new(),
+    "signboard" => Signboard.new(),
+    "pumpkin_patch" => PumpkinPatch.new(),
+    "blacksmith" => Blacksmith.new(),
+    "monster" => Monster.new(),
+    "death" => Death.new(),
+    "completed" => Completed.new(),
+  }
+
+  def initialize(start_scene)
+    @start_scene = start_scene
+  end
+
+  def next_scene(scene_name)
+    direction_choice = @@scene_options[scene_name]
+    return direction_choice
+  end
+
+  def opening_scene()
+    return next_scene(@start_scene)
+  end
+end
+
+a_map = GameMap.new("opening_scene")
+a_game = GameEngine.new(a_map)
+a_game.play() 
 
 
 puts "Please choose a character type:"
 chartypeselection = gets.chomp
 Player = Character.new(chartypeselection)
 
-
-game = Blacksmith.new()
-game.enter()
