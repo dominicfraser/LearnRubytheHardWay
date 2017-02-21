@@ -52,3 +52,7 @@ class Character
     end
    end
 end
+
+puts "Please choose a character type:"
+chartypeselection = gets.chomp
+Player = Character.new(chartypeselection)

@@ -53,7 +53,6 @@ class Character
    end
 end
 
-
 class Item
   attr_reader :item_desc 
   attr_reader :item_changes
@@ -67,17 +66,74 @@ class Item
   end
 end
 
-armour = Item.new("body_armour", "strength", 20)
-# Sam = Character.new("rouge")
-# puts "Your BS is #{Sam.base_strength}"
-# Sam.add_item(armour)
-# puts "Your BS is #{Sam.base_strength}"
+class Scene
+  attr_accessor :visited_pumpkin
+  attr_accessor :visited_blacksmith
+
+  def initialize
+    @visited_pumpkin = false
+    @visited_blacksmith = false
+  end
+
+  def enter()
+    puts "Scene not set up yet, set it up!"
+    exit(1)
+  end
+end
+
+class Blacksmith < Scene
+
+  def enter 
+    while @visited_blacksmith == false
+      armour = Item.new("body_armour", "health", 20)
+      sword = Item.new("a_sword", "strength", 20)
+      #how do I make the above visible if I create them 
+      #outside of this method??
+
+      puts "welcome blacksmith message"
+      puts "choose HELP or LEAVE"
+      
+      action = gets.chomp.upcase
+
+      if action == "HELP"
+        puts "you chose to help"
+        @visited_blacksmith = true
+        puts "you put out the fire"
+        puts "Blacksmith offers you either some ARMOUR or a SWORD"
+        choice = gets.chomp.upcase
+          if choice == "ARMOUR"
+            Player.add_item(armour)
+            puts Player.base_health
+          elsif choice == "SWORD"
+            Player.add_item(sword)
+            puts Player.base_strength
+          else
+            puts "didn't understand"
+            choice = gets.chomp.upcase
+          end
+              
+      
+
+      elsif action == "LEAVE"
+        puts "building burns down"
+        @visited_blacksmith = true
+        puts "hope no one saw"
+      else
+        puts "didn't understand"
+        puts "something went wrong"
+      end
+    end
+
+    puts "this wouldnt be seen as redirect"
+    return "signboard"
+  end
+end
 
 
 puts "Please choose a character type:"
 chartypeselection = gets.chomp
-Jake = Character.new(chartypeselection)
-puts "Great!"
-puts "Your Base Strength is #{Jake.base_strength}"
-Jake.add_item(armour)
-puts "Your BS is now #{Jake.base_strength}"
+Player = Character.new(chartypeselection)
+
+
+game = Blacksmith.new()
+game.enter()
