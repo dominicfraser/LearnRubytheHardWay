@@ -54,13 +54,13 @@ class PumpkinPatch < Scene
 
         if action == "CATCH"
           puts "now you catch"
-          Player.base_agility += 10
+          player.base_agility += 10
           @visited_pumpkin = true
           return "signboard"
 
         elsif action == "THROW"
           puts "now you throw"
-          Player.base_strength += 10
+          player.base_strength += 10
           @visited_pumpkin = true
           return "signboard"
 
@@ -96,11 +96,11 @@ class Blacksmith < Scene
         puts "Blacksmith offers you either some ARMOUR or a SWORD"
         choice = gets.chomp.upcase
           if choice == "ARMOUR"
-            Player.add_item(armour)
-            puts Player.base_health
+            player.add_item(armour)
+            puts player.base_health
           elsif choice == "SWORD"
-            Player.add_item(sword)
-            puts Player.base_strength
+            player.add_item(sword)
+            puts player.base_strength
           else
             puts "didn't understand"
             choice = gets.chomp.upcase
@@ -125,13 +125,13 @@ end
 class Monster < Scene
   def initialize
     @fighting = true
-    @damage_this_round = Player.base_strength + rand(1..10)
-    @your_health = Player.base_health
+    @damage_this_round = player.base_strength + rand(1..10)
+    @your_health = player.base_health
     @monster_health = 300
   end
 
   def did_you_hit 
-    if rand(1..10) < ( Player.base_agility / 10 )
+    if rand(1..10) < ( player.base_agility / 10 )
       return true
     else
       return false
@@ -139,7 +139,7 @@ class Monster < Scene
   end
 
   def it_strikes
-      if rand(1..10) > ( Player.base_agility / 10 - 2 )
+      if rand(1..10) > ( player.base_agility / 10 - 2 )
         @your_health -= 15
         if @your_health <= 0
           @fighting = false

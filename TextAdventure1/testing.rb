@@ -10,7 +10,7 @@ class Character
     @base_health = 0
     @base_agility = 0
     self.chooseclass
-    items_held = {}
+    #items_held = [] use on later version?
   end
 
   def chooseclass
@@ -75,26 +75,27 @@ class Scene
     @visited_blacksmith = false
   end
 
-  def enter()
+  def enter(player)
     puts "Scene not set up yet, set it up!"
     exit(1)
   end
 end
 
 class OpeningScene < Scene
-  def enter()
+  def enter(player)
     puts "welcome message"
     return "signboard"
   end
 end
 
 class Signboard < Scene
-  def enter()
+  def enter(player)
     puts "where do you want to go?"
     puts "PUMPKINPATCH, BLACKSMITH, MONSTER"
     where = gets.chomp.upcase
 
-    if where == "PUMPKINPATCH"
+    if where.include?("PUMP") == true
+
       puts "pumpkins"
       return "pumpkin_patch"
     elsif where == "BLACKSMITH"
@@ -112,7 +113,10 @@ end
 
 class PumpkinPatch < Scene
 
-  def enter()
+  def enter(player)
+
+    @player = player
+
     while @visited_pumpkin == false
         puts "welcome to pumpkin patch"
         puts "you can CATCH or THROW pumpkins"
@@ -122,13 +126,13 @@ class PumpkinPatch < Scene
 
         if action == "CATCH"
           puts "now you catch"
-          Player.base_agility += 10
+          player.base_agility += 10
           @visited_pumpkin = true
           return "signboard"
 
         elsif action == "THROW"
           puts "now you throw"
-          Player.base_strength += 10
+          player.base_strength += 10
           @visited_pumpkin = true
           return "signboard"
 
@@ -145,7 +149,9 @@ end
 
 class Blacksmith < Scene
 
-  def enter 
+  def enter(player)
+    @player = player
+
     while @visited_blacksmith == false
       armour = Item.new("body_armour", "health", 20)
       sword = Item.new("a_sword", "strength", 20)
@@ -164,11 +170,11 @@ class Blacksmith < Scene
         puts "Blacksmith offers you either some ARMOUR or a SWORD"
         choice = gets.chomp.upcase
           if choice == "ARMOUR"
-            Player.add_item(armour)
-            puts Player.base_health
+            player.add_item(armour)
+            puts player.base_health
           elsif choice == "SWORD"
-            Player.add_item(sword)
-            puts Player.base_strength
+            player.add_item(sword)
+            puts player.base_strength
           else
             puts "didn't understand"
             choice = gets.chomp.upcase
@@ -193,13 +199,12 @@ end
 class Monster < Scene
   def initialize
     @fighting = true
-    @damage_this_round = Player.base_strength + rand(1..10)
-    @your_health = Player.base_health
     @monster_health = 300
   end
 
+
   def did_you_hit 
-    if rand(1..10) < ( Player.base_agility / 10 )
+    if rand(1..10) < ( @player.base_agility / 10 )
       return true
     else
       return false
@@ -207,9 +212,10 @@ class Monster < Scene
   end
 
   def it_strikes
-      if rand(1..10) > ( Player.base_agility / 10 - 2 )
-        @your_health -= 15
-        if @your_health <= 0
+      if rand(1..10) > ( @player.base_agility / 10 - 2 )
+        @player.base_health -= 15
+        puts "base health is #{@player.base_health}"
+        if @player.base_health <= 0
           @fighting = false
         else
           puts "It hits you but you're still standing."
@@ -219,12 +225,20 @@ class Monster < Scene
       end
   end
 
-  def enter 
+  def enter(player) 
+    @player = player
+    @damage_this_round = player.base_strength + rand(1..10)
+
+    puts "Your strength is #{player.base_strength}"
+    puts "Your health is #{player.base_health}"
+    puts "Your agility is #{player.base_agility}"
+
     while @fighting
       
       if did_you_hit == true
         @monster_health -= @damage_this_round
         puts "You hit it!"
+        puts "Its health is #{@monster_health}"
         if @monster_health <= 0
           @fighting = false
         else
@@ -239,7 +253,7 @@ class Monster < Scene
       end
     end
 
-    if @your_health <= 0
+    if @player.base_health <= 0
       return "death"
     else
       return "completed"
@@ -249,21 +263,22 @@ class Monster < Scene
 end
 
 class Death < Scene
-  def enter 
+  def enter(player) 
     puts "You died.  Good job!"
     exit(1)
   end
 end
 
 class Completed < Scene
-  def enter
+  def enter(player)
     puts "You won! Good job."
   end
 end
 
 class GameEngine 
-  def initialize(scenes)
+  def initialize(scenes, current_player)
     @scenes = scenes
+    @current_player = current_player
   end
 
   def play()
@@ -271,11 +286,11 @@ class GameEngine
     last_scene = @scenes.next_scene("completed")
 
     while current_scene != last_scene
-      next_scene_name = current_scene.enter()
+      next_scene_name = current_scene.enter(@current_player)
       current_scene = @scenes.next_scene(next_scene_name)
     end
 
-  current_scene.enter()
+  current_scene.enter(@current_player)
   end
 end
 
@@ -304,12 +319,13 @@ class GameMap
   end
 end
 
-a_map = GameMap.new("opening_scene")
-a_game = GameEngine.new(a_map)
-a_game.play() 
-
-
 puts "Please choose a character type:"
 chartypeselection = gets.chomp
-Player = Character.new(chartypeselection)
+player = Character.new(chartypeselection)
 
+a_map = GameMap.new("opening_scene")
+a_game = GameEngine.new(a_map, player)
+
+
+
+a_game.play() 
