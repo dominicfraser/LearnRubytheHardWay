@@ -10,7 +10,7 @@ class Character
     @base_health = 0
     @base_agility = 0
     self.chooseclass
-    items_held = {}
+    #items_held = [] use on later version?
   end
 
   def chooseclass
@@ -25,7 +25,7 @@ class Character
        @base_agility += 70
      when "cleric"
        @base_strength += 40
-       @base_health += 80
+       @base_health += 90
        @base_agility += 50
      else
        puts "Please select brute, rouge, or cleric." 

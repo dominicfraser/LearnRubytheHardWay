@@ -7,32 +7,32 @@ class Scene
     @visited_blacksmith = false
   end
 
-  def enter()
+  def enter(player)
     puts "Scene not set up yet, set it up!"
     exit(1)
   end
 end
 
 class OpeningScene < Scene
-  def enter()
+  def enter(player)
     puts "welcome message"
     return "signboard"
   end
 end
 
 class Signboard < Scene
-  def enter()
+  def enter(player)
     puts "where do you want to go?"
     puts "PUMPKINPATCH, BLACKSMITH, MONSTER"
     where = gets.chomp.upcase
 
-    if where == "PUMPKINPATCH"
+    if where.include?("PUMP") == true
       puts "pumpkins"
       return "pumpkin_patch"
-    elsif where == "BLACKSMITH"
+    elsif where.include?("BLACK")
       puts "blacksmith"
       return "blacksmith"
-    elsif where == "MONSTER"
+    elsif where.include?("MON")
       puts "monster"
       return "monster"
     else
@@ -44,7 +44,10 @@ end
 
 class PumpkinPatch < Scene
 
-  def enter()
+  def enter(player)
+
+    @player = player
+
     while @visited_pumpkin == false
         puts "welcome to pumpkin patch"
         puts "you can CATCH or THROW pumpkins"
@@ -77,7 +80,9 @@ end
 
 class Blacksmith < Scene
 
-  def enter 
+  def enter(player)
+    @player = player
+
     while @visited_blacksmith == false
       armour = Item.new("body_armour", "health", 20)
       sword = Item.new("a_sword", "strength", 20)
@@ -125,13 +130,12 @@ end
 class Monster < Scene
   def initialize
     @fighting = true
-    @damage_this_round = player.base_strength + rand(1..10)
-    @your_health = player.base_health
     @monster_health = 300
   end
 
+
   def did_you_hit 
-    if rand(1..10) < ( player.base_agility / 10 )
+    if rand(1..10) < ( @player.base_agility / 10 )
       return true
     else
       return false
@@ -139,9 +143,10 @@ class Monster < Scene
   end
 
   def it_strikes
-      if rand(1..10) > ( player.base_agility / 10 - 2 )
-        @your_health -= 15
-        if @your_health <= 0
+      if rand(1..10) > ( @player.base_agility / 10 - 2 )
+        @player.base_health -= 15
+        puts "base health is #{@player.base_health}"
+        if @player.base_health <= 0
           @fighting = false
         else
           puts "It hits you but you're still standing."
@@ -151,12 +156,20 @@ class Monster < Scene
       end
   end
 
-  def enter 
+  def enter(player) 
+    @player = player
+    @damage_this_round = player.base_strength + rand(1..10)
+
+    puts "Your strength is #{player.base_strength}"
+    puts "Your health is #{player.base_health}"
+    puts "Your agility is #{player.base_agility}"
+
     while @fighting
       
       if did_you_hit == true
         @monster_health -= @damage_this_round
         puts "You hit it!"
+        puts "Its health is #{@monster_health}"
         if @monster_health <= 0
           @fighting = false
         else
@@ -171,7 +184,7 @@ class Monster < Scene
       end
     end
 
-    if @your_health <= 0
+    if @player.base_health <= 0
       return "death"
     else
       return "completed"
@@ -181,15 +194,14 @@ class Monster < Scene
 end
 
 class Death < Scene
-  def enter 
+  def enter(player) 
     puts "You died.  Good job!"
     exit(1)
   end
 end
 
 class Completed < Scene
-  def enter
+  def enter(player)
     puts "You won! Good job."
   end
 end
-

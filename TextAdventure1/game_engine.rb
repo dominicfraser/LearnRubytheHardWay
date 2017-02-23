@@ -1,6 +1,7 @@
 class GameEngine 
-  def initialize(scenes)
+  def initialize(scenes, current_player)
     @scenes = scenes
+    @current_player = current_player
   end
 
   def play()
@@ -8,11 +9,11 @@ class GameEngine
     last_scene = @scenes.next_scene("completed")
 
     while current_scene != last_scene
-      next_scene_name = current_scene.enter()
+      next_scene_name = current_scene.enter(@current_player)
       current_scene = @scenes.next_scene(next_scene_name)
     end
 
-  current_scene.enter()
+  current_scene.enter(@current_player)
   end
 end
 
@@ -41,8 +42,10 @@ class GameMap
   end
 end
 
-Player = Character.new("rouge")
+puts "Please choose a character type:"
+chartypeselection = gets.chomp
+player = Character.new(chartypeselection)
 
 a_map = GameMap.new("opening_scene")
-a_game = GameEngine.new(a_map)
-a_game.play() 
+a_game = GameEngine.new(a_map, player)
+
